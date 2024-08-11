@@ -5,6 +5,21 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         List<Thread> threads = new ArrayList<>();
+        Thread maxValueThread = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                synchronized (sizeToFreq) {
+                    try {
+                        sizeToFreq.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    int maxKey = Collections.max(sizeToFreq.entrySet(), Map.Entry.comparingByValue()).getKey();
+                    System.out.println("Самое частое количество повторений  " + maxKey + " (встретилось " + sizeToFreq.get(maxKey) + " раз)");
+                }
+            }
+        });
+        maxValueThread.start();
+
         for (int i = 0; i < 1000; i++) {
             Thread thread = new Thread(() -> {
                 String s = generateRoute("RLRFR", 100);
@@ -21,6 +36,7 @@ public class Main {
                     } else {
                         sizeToFreq.put(counter, 1);
                     }
+                    sizeToFreq.notify();
                 }
                 System.out.println(counter);
             });
@@ -31,6 +47,7 @@ public class Main {
         for (Thread thread : threads) {
             thread.join(); // зависаем, ждём когда поток объект которого лежит в thread завершится
         }
+        maxValueThread.interrupt();
 
         int maxKey = Collections.max(sizeToFreq.entrySet(), Map.Entry.comparingByValue()).getKey();
         System.out.println("Самое частое количество повторений  " + maxKey + " (встретилось " + sizeToFreq.get(maxKey) + " раз)");
