@@ -36,9 +36,9 @@ public class Main {
                     } else {
                         sizeToFreq.put(counter, 1);
                     }
+                    System.out.println(counter);
                     sizeToFreq.notify();
                 }
-                System.out.println(counter);
             });
             threads.add(thread);
             thread.start();
